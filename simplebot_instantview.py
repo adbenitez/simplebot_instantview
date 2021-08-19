@@ -50,18 +50,21 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
     with session.get(url, stream=True) as resp:
         resp.raise_for_status()
         url = resp.url
+        content_type = resp.headers.get("content-type", "").lower()
+        has_preview = "text/html" in content_type or "image/" in content_type
         max_size = int(_getdefault(bot, "max_size"))
         size = int(resp.headers.get("content-size") or -1)
+        content = b""
         if size < max_size:
             size = 0
             for chunk in resp.iter_content(chunk_size=102400):
                 size += len(chunk)
                 if size > max_size:
+                    del content
                     break
-        content_type = resp.headers.get("content-type", "").lower()
-        if size > max_size or (
-            "text/html" not in content_type and "image/" not in content_type
-        ):
+                if has_preview:
+                    content += chunk
+        if size > max_size or not has_preview:
             if int(resp.headers.get("content-size") or -1) == -1 and size > max_size:
                 label = f">{_sizeof_fmt(max_size)}"
             else:
@@ -69,18 +72,18 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
             ctype = resp.headers.get("content-type", "").split(";")[0] or "-"
             kwargs["text"] = f"Type: {ctype}\nSize: {label}"
         elif "text/html" in content_type:
-            kwargs["text"], kwargs["html"] = _prepare_html(url, resp.text)
+            kwargs["text"], kwargs["html"] = _prepare_html(url, content)
         elif "image/" in content_type:
             kwargs["filename"] = "image." + re.search(  # type: ignore
                 r"image/(\w+)", content_type
             ).group(1)
-            kwargs["bytefile"] = io.BytesIO(resp.content)
+            kwargs["bytefile"] = io.BytesIO(content)
 
     replies.add(**kwargs)
 
 
-def _prepare_html(url: str, html: str) -> tuple:
-    soup = bs4.BeautifulSoup(html, "html5lib")
+def _prepare_html(url: str, content: bytes) -> tuple:
+    soup = bs4.BeautifulSoup(content, "html5lib")
     for tag in soup("script"):
         tag.extract()
     if soup.title:
@@ -169,9 +172,9 @@ class TestPlugin:
         )
         msg = mocker.get_one_reply("check out https://html.example.org it is nice")
         assert msg.has_html()
-        assert msg.html == "html body"
+        assert "html body" in msg.html
 
-        requests_mock.get("https://binary.example.com", content=b"data")
+        requests_mock.get("https://binary.example.org", content=b"data")
         msg = mocker.get_one_reply("check out https://binary.example.org it is nice")
         assert not msg.has_html()
         assert msg.text

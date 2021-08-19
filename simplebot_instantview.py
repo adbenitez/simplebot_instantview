@@ -3,6 +3,7 @@
 import functools
 import io
 import re
+from urllib.parse import quote_plus
 
 import bs4
 import requests
@@ -91,14 +92,7 @@ def prepare_html(bot_addr: str, url: str, content: bytes) -> tuple:
     """
     soup = bs4.BeautifulSoup(content, "html5lib")
 
-    # remove unused tags
-    for tag in soup("script"):
-        tag.extract()
-    for tag in soup(["button", "input"]):
-        if tag.has_attr("type") and tag["type"] == "hidden":
-            tag.extract()
-    for tag in soup.find_all(text=lambda text: isinstance(text, bs4.Comment)):
-        tag.extract()
+    _remove_unused_tags(soup)
 
     # fix URLs
     index = url.find("/", 8)
@@ -123,16 +117,15 @@ def prepare_html(bot_addr: str, url: str, content: bytes) -> tuple:
             element[attr] = re.sub(r"^(/.*)", r"{}\1".format(root), element[attr])
             if not re.match(r"^https?://", element[attr]):
                 element[attr] = "{}/{}".format(url, element[attr])
+            if tag == "a":
+                element[
+                    "href"
+                ] = f"mailto:{bot_addr}?body={quote_plus(element['href'])}"
 
-    for tag in soup("a", attrs={"href": True}):
-        if not tag["href"].startswith("mailto:"):
-            tag["href"] = f"mailto:{bot_addr}?body={tag['href']}"
-
-    if soup.title:
-        text = soup.title.get_text().strip()
-    else:
-        text = "Page without title"
-    return text, str(soup)
+    return (
+        soup.title.get_text().strip() if soup.title else "Page without title",
+        str(soup),
+    )
 
 
 def prepare_url(url: str, bot: DeltaBot) -> str:
@@ -159,6 +152,16 @@ def prepare_url(url: str, bot: DeltaBot) -> str:
         )
 
     return url
+
+
+def _remove_unused_tags(soup: bs4.BeautifulSoup) -> None:
+    for tag in soup("script"):
+        tag.extract()
+    for tag in soup(["button", "input"]):
+        if tag.has_attr("type") and tag["type"] == "hidden":
+            tag.extract()
+    for tag in soup.find_all(text=lambda text: isinstance(text, bs4.Comment)):
+        tag.extract()
 
 
 def _getdefault(bot: DeltaBot, key: str, value: str = None) -> str:

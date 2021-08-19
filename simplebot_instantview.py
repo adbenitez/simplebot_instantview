@@ -159,11 +159,19 @@ class TestPlugin:
     """Offline tests"""
 
     def test_filter(self, mocker, requests_mock) -> None:
-        requests_mock.get("https://fsf.org", text="html body")
-
         msgs = mocker.get_replies("Hello world")
         assert not msgs
 
-        msg = mocker.get_one_reply("check out https://fsf.org it is nice")
+        requests_mock.get(
+            "https://html.example.org",
+            text="html body",
+            headers={"Content-Type": "text/html"},
+        )
+        msg = mocker.get_one_reply("check out https://html.example.org it is nice")
         assert msg.has_html()
         assert msg.html == "html body"
+
+        requests_mock.get("https://binary.example.com", content=b"data")
+        msg = mocker.get_one_reply("check out https://binary.example.org it is nice")
+        assert not msg.has_html()
+        assert msg.text

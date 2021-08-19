@@ -37,15 +37,15 @@ By default maximum file size is 10485760 (10MB), to customize::
 
 To set the nitter instance used for twitter links::
 
-  simplebot -a bot@example.com db -s simplebot_instantview/nitter_instance "https://nitter.cc"
+  simplebot -a bot@example.com db -s simplebot_instantview/twitter_proxy "https://twiiit.com"
 
 To set the invidious instance used for youtube links::
 
-  simplebot -a bot@example.com db -s simplebot_instantview/invidious_instance "https://invidious.snopyta.org"
+  simplebot -a bot@example.com db -s simplebot_instantview/youtube_proxy "https://invidious.snopyta.org"
 
 To set the teddit instance used for reddit links::
 
-  simplebot -a bot@example.com db -s simplebot_instantview/teddit_instance "https://teddit.net"
+  simplebot -a bot@example.com db -s simplebot_instantview/reddit_proxy "https://teddit.net"
 
 
 .. _SimpleBot: https://github.com/simplebot-org/simplebot

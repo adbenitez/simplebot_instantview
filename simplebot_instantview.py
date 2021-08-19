@@ -29,9 +29,9 @@ session.request = functools.partial(session.request, timeout=60)  # type: ignore
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
     _getdefault(bot, "max_size", str(1024 ** 2 * 10))
-    _getdefault(bot, "nitter_instance", "https://nitter.cc")
-    _getdefault(bot, "invidious_instance", "https://invidious.snopyta.org")
-    _getdefault(bot, "teddit_instance", "https://teddit.net")
+    _getdefault(bot, "twitter_proxy", "https://twiiit.com")
+    _getdefault(bot, "youtube_proxy", "https://invidious.snopyta.org")
+    _getdefault(bot, "reddit_proxy", "https://teddit.net")
 
 
 @simplebot.filter
@@ -132,23 +132,23 @@ def prepare_url(url: str, bot: DeltaBot) -> str:
     """Convert Twitter, YouTube and Reddit links to alternative non-JS frontends."""
     if url.startswith("https://twitter.com/"):
         return url.replace(
-            "https://twitter.com", _getdefault(bot, "nitter_instance"), 1
+            "https://twitter.com", _getdefault(bot, "twitter_proxy"), 1
         )
     if url.startswith("https://mobile.twitter.com/"):
         return url.replace(
-            "https://mobile.twitter.com", _getdefault(bot, "nitter_instance"), 1
+            "https://mobile.twitter.com", _getdefault(bot, "twitter_proxy"), 1
         )
     if url.startswith("https://youtube.com/"):
         return url.replace(
-            "https://youtube.com", _getdefault(bot, "invidious_instance"), 1
+            "https://youtube.com", _getdefault(bot, "youtube_proxy"), 1
         )
     if url.startswith("https://youtu.be/"):
         return url.replace(
-            "https://youtu.be", _getdefault(bot, "invidious_instance"), 1
+            "https://youtu.be", _getdefault(bot, "youtube_proxy"), 1
         )
     if url.startswith("https://www.reddit.com/"):
         return url.replace(
-            "https://www.reddit.com", _getdefault(bot, "teddit_instance"), 1
+            "https://www.reddit.com", _getdefault(bot, "reddit_proxy"), 1
         )
 
     return url

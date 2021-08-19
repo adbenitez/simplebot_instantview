@@ -116,23 +116,23 @@ def _prepare_html(url: str, html: str) -> tuple:
 def _prepare_url(url: str, bot: DeltaBot) -> str:
     if url.startswith("https://twitter.com/"):
         return url.replace(
-            "https://twitter.com", _getdefault(bot, "nitter_instance"), count=1
+            "https://twitter.com", _getdefault(bot, "nitter_instance"), 1
         )
     if url.startswith("https://mobile.twitter.com/"):
         return url.replace(
-            "https://mobile.twitter.com", _getdefault(bot, "nitter_instance"), count=1
+            "https://mobile.twitter.com", _getdefault(bot, "nitter_instance"), 1
         )
     if url.startswith("https://youtube.com/"):
         return url.replace(
-            "https://youtube.com", _getdefault(bot, "invidious_instance"), count=1
+            "https://youtube.com", _getdefault(bot, "invidious_instance"), 1
         )
     if url.startswith("https://youtu.be/"):
         return url.replace(
-            "https://youtu.be", _getdefault(bot, "invidious_instance"), count=1
+            "https://youtu.be", _getdefault(bot, "invidious_instance"), 1
         )
     if url.startswith("https://www.reddit.com/"):
         return url.replace(
-            "https://www.reddit.com", _getdefault(bot, "teddit_instance"), count=1
+            "https://www.reddit.com", _getdefault(bot, "teddit_instance"), 1
         )
 
     return url

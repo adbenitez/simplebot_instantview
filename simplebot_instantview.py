@@ -32,6 +32,7 @@ def deltabot_init(bot: DeltaBot) -> None:
     _getdefault(bot, "twitter_proxy", "https://twiiit.com")
     _getdefault(bot, "youtube_proxy", "https://invidious.snopyta.org")
     _getdefault(bot, "reddit_proxy", "https://teddit.net")
+    _getdefault(bot, "instagram_proxy", "https://bibliogram.snopyta.org")
 
 
 @simplebot.filter
@@ -143,6 +144,10 @@ def prepare_url(url: str, bot: DeltaBot) -> str:
     if url.startswith("https://www.reddit.com/"):
         return url.replace(
             "https://www.reddit.com", _getdefault(bot, "reddit_proxy"), 1
+        )
+    if url.startswith("https://www.instagram.com/"):
+        return url.replace(
+            "https://www.instagram.com", _getdefault(bot, "instagram_proxy"), 1
         )
 
     return url

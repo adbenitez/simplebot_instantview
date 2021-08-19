@@ -35,17 +35,21 @@ By default maximum file size is 10485760 (10MB), to customize::
 
   simplebot -a bot@example.com db -s simplebot_instantview/max_size 5242880
 
-To set the nitter instance used for twitter links::
+To set the Twitter proxy site used for Twitter links::
 
   simplebot -a bot@example.com db -s simplebot_instantview/twitter_proxy "https://twiiit.com"
 
-To set the invidious instance used for youtube links::
+To set the YouTube proxy site used for YouTube links::
 
   simplebot -a bot@example.com db -s simplebot_instantview/youtube_proxy "https://invidious.snopyta.org"
 
-To set the teddit instance used for reddit links::
+To set the Reddit proxy site used for Reddit links::
 
   simplebot -a bot@example.com db -s simplebot_instantview/reddit_proxy "https://teddit.net"
+
+To set the Instagram proxy site used for Intagram links::
+
+  simplebot -a bot@example.com db -s simplebot_instantview/instagram_proxy "https://bibliogram.snopyta.org"
 
 
 .. _SimpleBot: https://github.com/simplebot-org/simplebot

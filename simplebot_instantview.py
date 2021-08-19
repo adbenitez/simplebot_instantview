@@ -131,21 +131,15 @@ def prepare_html(bot_addr: str, url: str, content: bytes) -> tuple:
 def prepare_url(url: str, bot: DeltaBot) -> str:
     """Convert Twitter, YouTube and Reddit links to alternative non-JS frontends."""
     if url.startswith("https://twitter.com/"):
-        return url.replace(
-            "https://twitter.com", _getdefault(bot, "twitter_proxy"), 1
-        )
+        return url.replace("https://twitter.com", _getdefault(bot, "twitter_proxy"), 1)
     if url.startswith("https://mobile.twitter.com/"):
         return url.replace(
             "https://mobile.twitter.com", _getdefault(bot, "twitter_proxy"), 1
         )
     if url.startswith("https://youtube.com/"):
-        return url.replace(
-            "https://youtube.com", _getdefault(bot, "youtube_proxy"), 1
-        )
+        return url.replace("https://youtube.com", _getdefault(bot, "youtube_proxy"), 1)
     if url.startswith("https://youtu.be/"):
-        return url.replace(
-            "https://youtu.be", _getdefault(bot, "youtube_proxy"), 1
-        )
+        return url.replace("https://youtu.be", _getdefault(bot, "youtube_proxy"), 1)
     if url.startswith("https://www.reddit.com/"):
         return url.replace(
             "https://www.reddit.com", _getdefault(bot, "reddit_proxy"), 1

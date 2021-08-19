@@ -44,7 +44,7 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
     if not match:
         return
 
-    url = _prepare_url(match.group(), bot)
+    url = prepare_url(match.group(), bot)
     kwargs = dict(quote=message)
 
     with session.get(url, stream=True) as resp:
@@ -72,7 +72,7 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
             ctype = resp.headers.get("content-type", "").split(";")[0] or "-"
             kwargs["text"] = f"Type: {ctype}\nSize: {label}"
         elif "text/html" in content_type:
-            kwargs["text"], kwargs["html"] = _prepare_html(url, content)
+            kwargs["text"], kwargs["html"] = prepare_html(url, content)
         elif "image/" in content_type:
             kwargs["filename"] = "image." + re.search(  # type: ignore
                 r"image/(\w+)", content_type
@@ -82,14 +82,14 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
     replies.add(**kwargs)
 
 
-def _prepare_html(url: str, content: bytes) -> tuple:
+def prepare_html(url: str, content: bytes) -> tuple:
+    """Sanitize HTML.
+
+    Returns a tuple with page title and sanitized HTML.
+    """
     soup = bs4.BeautifulSoup(content, "html5lib")
     for tag in soup("script"):
         tag.extract()
-    if soup.title:
-        text = soup.title.get_text().strip()
-    else:
-        text = "Page without title"
     index = url.find("/", 8)
     if index == -1:
         root = url
@@ -113,10 +113,15 @@ def _prepare_html(url: str, content: bytes) -> tuple:
             if not re.match(r"^https?://", element[attr]):
                 element[attr] = "{}/{}".format(url, element[attr])
 
+    if soup.title:
+        text = soup.title.get_text().strip()
+    else:
+        text = "Page without title"
     return text, str(soup)
 
 
-def _prepare_url(url: str, bot: DeltaBot) -> str:
+def prepare_url(url: str, bot: DeltaBot) -> str:
+    """Convert Twitter, YouTube and Reddit links to alternative non-JS frontends."""
     if url.startswith("https://twitter.com/"):
         return url.replace(
             "https://twitter.com", _getdefault(bot, "nitter_instance"), 1

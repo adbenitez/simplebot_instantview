@@ -72,7 +72,9 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
             ctype = resp.headers.get("content-type", "").split(";")[0] or "-"
             kwargs["text"] = f"Type: {ctype}\nSize: {label}"
         elif "text/html" in content_type:
-            kwargs["text"], kwargs["html"] = prepare_html(url, content)
+            kwargs["text"], kwargs["html"] = prepare_html(
+                bot.self_contact.addr, url, content
+            )
         elif "image/" in content_type:
             kwargs["filename"] = "image." + re.search(  # type: ignore
                 r"image/(\w+)", content_type
@@ -82,14 +84,23 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
     replies.add(**kwargs)
 
 
-def prepare_html(url: str, content: bytes) -> tuple:
+def prepare_html(bot_addr: str, url: str, content: bytes) -> tuple:
     """Sanitize HTML.
 
     Returns a tuple with page title and sanitized HTML.
     """
     soup = bs4.BeautifulSoup(content, "html5lib")
+
+    # remove unused tags
     for tag in soup("script"):
         tag.extract()
+    for tag in soup(["button", "input"]):
+        if tag.has_attr("type") and tag["type"] == "hidden":
+            tag.extract()
+    for tag in soup.find_all(text=lambda text: isinstance(text, bs4.Comment)):
+        tag.extract()
+
+    # fix URLs
     index = url.find("/", 8)
     if index == -1:
         root = url
@@ -112,6 +123,10 @@ def prepare_html(url: str, content: bytes) -> tuple:
             element[attr] = re.sub(r"^(/.*)", r"{}\1".format(root), element[attr])
             if not re.match(r"^https?://", element[attr]):
                 element[attr] = "{}/{}".format(url, element[attr])
+
+    for tag in soup("a", attrs={"href": True}):
+        if not tag["href"].startswith("mailto:"):
+            tag["href"] = f"mailto:{bot_addr}?body={tag['href']}"
 
     if soup.title:
         text = soup.title.get_text().strip()

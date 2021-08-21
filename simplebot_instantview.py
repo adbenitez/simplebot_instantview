@@ -2,6 +2,7 @@
 
 import functools
 import io
+import mimetypes
 import re
 from urllib.parse import quote_plus
 
@@ -53,7 +54,11 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
         resp.raise_for_status()
         url = resp.url
         content_type = resp.headers.get("content-type", "").lower()
-        has_preview = "text/html" in content_type or "image/" in content_type
+        has_preview = (
+            "text/html" in content_type
+            or "image/" in content_type
+            or "video/" in content_type
+        )
         max_size = int(_getdefault(bot, "max_size"))
         size = int(resp.headers.get("content-size") or -1)
         content = b""
@@ -77,13 +82,25 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
             kwargs["text"], kwargs["html"] = prepare_html(
                 bot.self_contact.addr, url, content
             )
-        elif "image/" in content_type:
-            kwargs["filename"] = "image." + re.search(  # type: ignore
-                r"image/(\w+)", content_type
-            ).group(1)
+        elif "image/" in content_type or "video/" in content_type:
+            kwargs["filename"] = "file" + get_extension(resp)
             kwargs["bytefile"] = io.BytesIO(content)
 
     replies.add(**kwargs)
+
+
+def get_extension(resp: requests.Response) -> str:
+    disp = resp.headers.get("content-disposition")
+    if disp is not None and re.findall("filename=(.+)", disp):
+        fname = re.findall("filename=(.+)", disp)[0].strip('"')
+    else:
+        fname = resp.url.split("/")[-1].split("?")[0].split("#")[0]
+    if "." in fname:
+        ext = "." + fname.rsplit(".", maxsplit=1)[-1]
+    else:
+        ctype = resp.headers.get("content-type", "").split(";")[0].strip().lower()
+        ext = mimetypes.guess_extension(ctype) or ""
+    return ext
 
 
 def prepare_html(bot_addr: str, url: str, content: bytes) -> tuple:

@@ -80,13 +80,15 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
                 text += f">{_sizeof_fmt(max_size)}"
             else:
                 text += _sizeof_fmt(size)
-            replies.add(text=text)
+            replies.add(text=text, quote=message)
         elif "text/html" in content_type:
             text, html = prepare_html(bot.self_contact.addr, url, content)
-            replies.add(text=text or "Page without title", html=html)
+            replies.add(text=text or "Page without title", html=html, quote=message)
         elif "image/" in content_type or "video/" in content_type:
             replies.add(
-                filename="file" + get_extension(resp), bytefile=io.BytesIO(content)
+                filename="file" + get_extension(resp),
+                bytefile=io.BytesIO(content),
+                quote=message,
             )
 
 

@@ -48,7 +48,6 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
         return
 
     url = prepare_url(match.group(), bot)
-    kwargs = dict(quote=message)
 
     with session.get(url, stream=True) as resp:
         resp.raise_for_status()
@@ -72,21 +71,23 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
                 if has_preview:
                     content += chunk
         if size > max_size or not has_preview:
-            if int(resp.headers.get("content-size") or -1) == -1 and size > max_size:
-                label = f">{_sizeof_fmt(max_size)}"
-            else:
-                label = _sizeof_fmt(size)
-            ctype = resp.headers.get("content-type", "").split(";")[0] or "-"
-            kwargs["text"] = f"Type: {ctype}\nSize: {label}"
-        elif "text/html" in content_type:
-            kwargs["text"], kwargs["html"] = prepare_html(
-                bot.self_contact.addr, url, content
+            text = (
+                "Type: "
+                + (resp.headers.get("content-type", "").split(";")[0] or "-")
+                + "\nSize: "
             )
+            if int(resp.headers.get("content-size") or -1) == -1 and size > max_size:
+                text += f">{_sizeof_fmt(max_size)}"
+            else:
+                text += _sizeof_fmt(size)
+            replies.add(text=text)
+        elif "text/html" in content_type:
+            text, html = prepare_html(bot.self_contact.addr, url, content)
+            replies.add(text=text or "Page without title", html=html)
         elif "image/" in content_type or "video/" in content_type:
-            kwargs["filename"] = "file" + get_extension(resp)
-            kwargs["bytefile"] = io.BytesIO(content)
-
-    replies.add(**kwargs)
+            replies.add(
+                filename="file" + get_extension(resp), bytefile=io.BytesIO(content)
+            )
 
 
 def get_extension(resp: requests.Response) -> str:
@@ -103,7 +104,9 @@ def get_extension(resp: requests.Response) -> str:
     return ext
 
 
-def prepare_html(bot_addr: str, url: str, content: bytes) -> tuple:
+def prepare_html(
+    bot_addr: str, url: str, content: bytes, link_prefix: str = ""
+) -> tuple:
     """Sanitize HTML.
 
     Returns a tuple with page title and sanitized HTML.
@@ -138,10 +141,10 @@ def prepare_html(bot_addr: str, url: str, content: bytes) -> tuple:
             if tag == "a":
                 element[
                     "href"
-                ] = f"mailto:{bot_addr}?body={quote_plus(element['href'])}"
+                ] = f"mailto:{bot_addr}?body={quote_plus(link_prefix + element['href'])}"
 
     return (
-        soup.title.get_text().strip() if soup.title else "Page without title",
+        soup.title and soup.title.get_text().strip(),
         str(soup),
     )
 

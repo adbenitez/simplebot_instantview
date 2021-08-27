@@ -125,7 +125,7 @@ def prepare_html(
         root = url[:index]
         url = url.rsplit("/", 1)[0]
     tags = (
-        ("a", "href", "mailto:"),
+        ("a", "href", ("mailto:", "#")),
         ("img", "src", "data:"),
         ("source", "src", "data:"),
         ("link", "href", None),
@@ -142,7 +142,7 @@ def prepare_html(
                 element[attr] = "{}/{}".format(url, element[attr])
             if tag == "a":
                 element[
-                    "href"
+                    attr
                 ] = f"mailto:{bot_addr}?body={quote_plus(link_prefix + element['href'])}"
 
     return (

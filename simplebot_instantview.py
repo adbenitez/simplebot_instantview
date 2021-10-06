@@ -24,12 +24,12 @@ session.headers.update(
         "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
     }
 )
-session.request = functools.partial(session.request, timeout=60)  # type: ignore
+session.request = functools.partial(session.request, timeout=15)  # type: ignore
 
 
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
-    _getdefault(bot, "max_size", str(1024 ** 2 * 10))
+    _getdefault(bot, "max_size", str(1024 ** 2 * 5))
     _getdefault(bot, "twitter_proxy", "https://twiiit.com")
     _getdefault(bot, "youtube_proxy", "https://invidious.snopyta.org")
     _getdefault(bot, "reddit_proxy", "https://teddit.net")
@@ -53,11 +53,6 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
         resp.raise_for_status()
         url = resp.url
         content_type = resp.headers.get("content-type", "").lower()
-        has_preview = (
-            "text/html" in content_type
-            or "image/" in content_type
-            or "video/" in content_type
-        )
         max_size = int(_getdefault(bot, "max_size"))
         size = int(resp.headers.get("content-size") or -1)
         content = b""
@@ -68,9 +63,8 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
                 if size > max_size:
                     del content
                     break
-                if has_preview:
-                    content += chunk
-        if size > max_size or not has_preview:
+                content += chunk
+        if size > max_size:
             text = (
                 "Type: "
                 + (resp.headers.get("content-type", "").split(";")[0] or "-")
@@ -84,7 +78,7 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
         elif "text/html" in content_type:
             text, html = prepare_html(bot.self_contact.addr, url, content)
             replies.add(text=text or "Page without title", html=html, quote=message)
-        elif "image/" in content_type or "video/" in content_type:
+        else:
             replies.add(
                 filename="file" + get_extension(resp),
                 bytefile=io.BytesIO(content),

@@ -129,11 +129,11 @@ def prepare_html(
             if iprefix and element[attr].startswith(iprefix):
                 continue
             element[attr] = re.sub(
-                r"^(//.*)", r"{}:\1".format(root.split(":", 1)[0]), element[attr]
+                r"^(//.*)", fr"{root.split(':', 1)[0]}:\1", element[attr]
             )
-            element[attr] = re.sub(r"^(/.*)", r"{}\1".format(root), element[attr])
+            element[attr] = re.sub(r"^(/.*)", fr"{root}\1", element[attr])
             if not re.match(r"^https?://", element[attr]):
-                element[attr] = "{}/{}".format(url, element[attr])
+                element[attr] = f"{url}/{element[attr]}"
             if tag == "a":
                 element[
                     attr
@@ -191,9 +191,9 @@ def _sizeof_fmt(num: float) -> str:
     suffix = "B"
     for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
         if abs(num) < 1024.0:
-            return "%3.1f%s%s" % (num, unit, suffix)
+            return "%3.1f%s%s" % (num, unit, suffix)  # noqa
         num /= 1024.0
-    return "%.1f%s%s" % (num, "Yi", suffix)
+    return "%.1f%s%s" % (num, "Yi", suffix)  # noqa
 
 
 class TestPlugin:

@@ -21,7 +21,7 @@ except DistributionNotFound:
 session = requests.Session()
 session.headers.update(
     {
-        "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
+        "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0"
     }
 )
 session.request = functools.partial(session.request, timeout=15)  # type: ignore

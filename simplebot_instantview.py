@@ -214,5 +214,5 @@ class TestPlugin:
 
         requests_mock.get("https://binary.example.org", content=b"data")
         msg = mocker.get_one_reply("check out https://binary.example.org it is nice")
-        assert not msg.has_html()
-        assert msg.text
+        assert msg.is_file()
+        assert not msg.text

@@ -119,14 +119,14 @@ def prepare_html(
         root = url[:index]
         url = url.rsplit("/", 1)[0]
     tags = (
-        ("a", "href", ("mailto:", "#")),
+        ("a", "href", ("mailto:", "openpgp4fpr:", "#")),
         ("img", "src", "data:"),
         ("source", "src", "data:"),
         ("link", "href", None),
     )
     for tag, attr, iprefix in tags:
         for element in soup(tag, attrs={attr: True}):
-            if iprefix and element[attr].startswith(iprefix):
+            if iprefix and element[attr].lower().startswith(iprefix):
                 continue
             element[attr] = re.sub(
                 r"^(//.*)", fr"{root.split(':', 1)[0]}:\1", element[attr]

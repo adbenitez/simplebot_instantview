@@ -132,7 +132,7 @@ def prepare_html(
                 r"^(//.*)", fr"{root.split(':', 1)[0]}:\1", element[attr]
             )
             element[attr] = re.sub(r"^(/.*)", fr"{root}\1", element[attr])
-            if not re.match(r"^https?://", element[attr]):
+            if not re.match(r"^\w+:", element[attr]):
                 element[attr] = f"{url}/{element[attr]}"
             if tag == "a":
                 element[

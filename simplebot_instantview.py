@@ -54,9 +54,10 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
         url = resp.url
         content_type = resp.headers.get("content-type", "").lower()
         max_size = int(_getdefault(bot, "max_size"))
-        size = int(resp.headers.get("content-size") or -1)
+        content_size = int(resp.headers.get("content-size") or -1)
+        ext = get_extension(resp)
         content = b""
-        if size < max_size:
+        if content_size < max_size:
             size = 0
             for chunk in resp.iter_content(chunk_size=102400):
                 size += len(chunk)
@@ -64,26 +65,22 @@ def filter_links(bot: DeltaBot, message: Message, replies: Replies) -> None:
                     del content
                     break
                 content += chunk
-        if size > max_size:
-            text = (
-                "Type: "
-                + (resp.headers.get("content-type", "").split(";")[0] or "-")
-                + "\nSize: "
-            )
-            if int(resp.headers.get("content-size") or -1) == -1 and size > max_size:
-                text += f">{_sizeof_fmt(max_size)}"
-            else:
-                text += _sizeof_fmt(size)
-            replies.add(text=text, quote=message)
-        elif "text/html" in content_type:
-            text, html = prepare_html(bot.self_contact.addr, url, content)
-            replies.add(text=text or "Page without title", html=html, quote=message)
         else:
-            replies.add(
-                filename="file" + get_extension(resp),
-                bytefile=io.BytesIO(content),
-                quote=message,
-            )
+            size = content_size
+    if size > max_size:
+        text = (
+            f"Type: {content_type.split(';')[0] or '-'}\nSize: >{_sizeof_fmt(max_size)}"
+        )
+        replies.add(text=text, quote=message)
+    elif "text/html" in content_type:
+        text, html = prepare_html(bot.self_contact.addr, url, content)
+        replies.add(text=text or "Page without title", html=html, quote=message)
+    else:
+        replies.add(
+            filename="file" + ext,
+            bytefile=io.BytesIO(content),
+            quote=message,
+        )
 
 
 def get_extension(resp: requests.Response) -> str:

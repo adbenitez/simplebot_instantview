@@ -29,7 +29,7 @@ session.request = functools.partial(session.request, timeout=15)  # type: ignore
 
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
-    _getdefault(bot, "max_size", str(1024 ** 2 * 15))
+    _getdefault(bot, "max_size", str(1024**2 * 15))
     _getdefault(bot, "twitter_proxy", "https://twiiit.com")
     _getdefault(bot, "youtube_proxy", "https://invidious.snopyta.org")
     _getdefault(bot, "reddit_proxy", "https://teddit.net")
@@ -126,9 +126,9 @@ def prepare_html(
             if iprefix and element[attr].lower().startswith(iprefix):
                 continue
             element[attr] = re.sub(
-                r"^(//.*)", fr"{root.split(':', 1)[0]}:\1", element[attr]
+                r"^(//.*)", rf"{root.split(':', 1)[0]}:\1", element[attr]
             )
-            element[attr] = re.sub(r"^(/.*)", fr"{root}\1", element[attr])
+            element[attr] = re.sub(r"^(/.*)", rf"{root}\1", element[attr])
             if not re.match(r"^\w+:", element[attr]):
                 element[attr] = f"{url}/{element[attr]}"
             if tag == "a":

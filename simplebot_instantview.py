@@ -29,7 +29,7 @@ session.request = functools.partial(session.request, timeout=15)  # type: ignore
 
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
-    _getdefault(bot, "max_size", str(1024 ** 2 * 5))
+    _getdefault(bot, "max_size", str(1024 ** 2 * 15))
     _getdefault(bot, "twitter_proxy", "https://twiiit.com")
     _getdefault(bot, "youtube_proxy", "https://invidious.snopyta.org")
     _getdefault(bot, "reddit_proxy", "https://teddit.net")

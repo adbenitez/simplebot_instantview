@@ -1,6 +1,11 @@
 Changelog
 =========
 
+`Unreleased`_
+-------------
+
+- changed default ``max_size`` to 15MB.
+
 1.0.0
 -----
 

@@ -1,4 +1,4 @@
 simplebot==2.4.0
-requests==2.27.1
+requests==2.28.2
 beautifulsoup4==4.11.1
 html5lib==1.1

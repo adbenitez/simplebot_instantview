@@ -1,3 +1,5 @@
+**NOTICE:** Discontinued in favor of https://github.com/deltachat-bot/instantview
+
 Instant View
 ============
 
